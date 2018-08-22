@@ -120,20 +120,18 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 			Username: string(jsonUtils.TokenRequest.Client_id),
 			Password: jsonUtils.TokenRequest.Client_secret,
 		}
-		fmt.Println(auth.Username)
 		if auth.Username != "" {
 			return auth
 		}
-	} else {
-		auth, err := CheckBasicAuth(r)
-		if err != nil {
-			s.setErrorAndLog(w, E_INVALID_REQUEST, err, "get_client_auth=%s", "check auth error")
-			return nil
-		}
-		if auth == nil {
-			s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth=%s", "client authentication not sent")
-			return nil
-		}
+	}
+	auth, err := CheckBasicAuth(r)
+	if err != nil {
+		s.setErrorAndLog(w, E_INVALID_REQUEST, err, "get_client_auth=%s", "check auth error")
+		return nil
+	}
+	if auth == nil {
+		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth=%s", "client authentication not sent")
+		return nil
 	}
 	out, err := json.Marshal(auth)
 	if err != nil {
