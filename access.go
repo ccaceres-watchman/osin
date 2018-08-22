@@ -3,11 +3,10 @@ package osin
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -127,18 +126,8 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Request must be POST"), "access_request=%s", "request must be POST")
 		return nil
 	}
-	jsonUtils.IsJSON = true
 
-	if r.Body != nil {
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			panic(err)
-		}
-		err = json.Unmarshal(body, &jsonUtils.TokenRequest)
-		if err != nil {
-			jsonUtils.IsJSON = false
-		}
-	}
+	s.InitJsonUtils(r)
 
 	if !jsonUtils.IsJSON {
 		err := r.ParseForm()
@@ -146,14 +135,15 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 			s.setErrorAndLog(w, E_INVALID_REQUEST, err, "access_request=%s", "parsing error")
 			return nil
 		}
+		jsonUtils.TokenRequest.Grant_type = r.FormValue("grant_type")
+		jsonUtils.TokenRequest.Client_id, err = strconv.Atoi(r.FormValue("client_id"))
+		jsonUtils.TokenRequest.Client_secret = r.FormValue("client_secret")
+		jsonUtils.TokenRequest.Username = r.FormValue("username")
+		jsonUtils.TokenRequest.Password = r.FormValue("password")
+		jsonUtils.TokenRequest.Scope = r.FormValue("scope")
 	}
 
-	grantRequest := r.FormValue("grant_type")
-	if jsonUtils.IsJSON {
-		grantRequest = jsonUtils.TokenRequest.Grant_type
-	}
-
-	grantType := AccessRequestType(grantRequest)
+	grantType := AccessRequestType(jsonUtils.TokenRequest.Grant_type)
 	fmt.Printf("Grant Type: %s\n", grantType)
 	if s.Config.AllowedAccessTypes.Exists(grantType) {
 		switch grantType {
@@ -385,16 +375,13 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	if auth == nil {
 		return nil
 	}
-	userName := r.FormValue("username")
-	if jsonUtils.IsJSON {
-		userName = jsonUtils.TokenRequest.Username
-	}
+
 	// generate access token
 	ret := &AccessRequest{
 		Type:            PASSWORD,
-		Username:        userName,
-		Password:        r.FormValue("password"),
-		Scope:           r.FormValue("scope"),
+		Username:        jsonUtils.TokenRequest.Username,
+		Password:        jsonUtils.TokenRequest.Password,
+		Scope:           jsonUtils.TokenRequest.Scope,
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,

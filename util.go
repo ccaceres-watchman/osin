@@ -2,7 +2,9 @@ package osin
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -131,4 +133,20 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 		return nil
 	}
 	return auth
+}
+
+func (s Server) InitJsonUtils(r *http.Request) JsonUtils {
+	jsonUtils.IsJSON = true
+
+	if r.Body != nil {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(body, &jsonUtils.TokenRequest)
+		if err != nil {
+			jsonUtils.IsJSON = false
+		}
+	}
+	return jsonUtils
 }
