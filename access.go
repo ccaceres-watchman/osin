@@ -3,6 +3,7 @@ package osin
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -371,6 +372,12 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequest {
 	// get client authentication
 	auth := s.getClientAuth(w, r, s.Config.AllowClientSecretInParams)
+	out, err := json.Marshal(auth)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(out))
 	if auth == nil {
 		return nil
 	}
@@ -388,19 +395,25 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 
 	// "username" and "password" is required
 	if ret.Username == "" || ret.Password == "" {
-		fmt.Printf("Empty user and pass\n")
+		fmt.Println("Empty user and pass")
 		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password=%s", "username and pass required")
 		return nil
 	}
 
 	// must have a valid client
 	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
-		fmt.Printf("Empty Client\n")
+		fmt.Println("Empty Client")
 		return nil
 	}
 
 	// set redirect uri
 	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+	out, err = json.Marshal(ret)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(out))
 
 	return ret
 }
@@ -482,6 +495,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		var err error
 
 		if ar.ForceAccessData == nil {
+			fmt.Println("Force Access Data")
 			// generate access token
 			ret = &AccessData{
 				Client:        ar.Client,
@@ -503,6 +517,12 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		} else {
 			ret = ar.ForceAccessData
 		}
+		out, err := json.Marshal(ret)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(out))
 
 		// save access token
 		if err = w.Storage.SaveAccess(ret); err != nil {
