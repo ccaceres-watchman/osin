@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -51,6 +52,7 @@ func CheckClientSecret(client Client, secret string) bool {
 // Return authorization header data
 func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if r.Header.Get("Authorization") == "" {
+		fmt.Println("empty authorization")
 		return nil, nil
 	}
 
@@ -80,6 +82,7 @@ func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("Check basic end")
 
 	return &BasicAuth{Username: username, Password: password}, nil
 }
