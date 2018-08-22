@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -52,7 +51,6 @@ func CheckClientSecret(client Client, secret string) bool {
 // Return authorization header data
 func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if r.Header.Get("Authorization") == "" {
-		fmt.Println("empty authorization")
 		return nil, nil
 	}
 
@@ -114,7 +112,6 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 	var auth *BasicAuth
 
 	if allowQueryParams {
-		fmt.Println("allowed query params")
 		// Allow for auth without password
 		auth = &BasicAuth{
 			Username: string(jsonUtils.TokenRequest.Client_id),
@@ -133,12 +130,6 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth=%s", "client authentication not sent")
 		return nil
 	}
-	out, err := json.Marshal(auth)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(out))
 	return auth
 }
 
