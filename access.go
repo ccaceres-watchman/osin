@@ -144,7 +144,6 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 	}
 
 	grantType := AccessRequestType(jsonUtils.TokenRequest.Grant_type)
-	fmt.Printf("Grant Type: %s\n", grantType)
 	if s.Config.AllowedAccessTypes.Exists(grantType) {
 		switch grantType {
 		case AUTHORIZATION_CODE:
@@ -389,12 +388,14 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 
 	// "username" and "password" is required
 	if ret.Username == "" || ret.Password == "" {
+		fmt.Printf("Empty user and pass\n")
 		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password=%s", "username and pass required")
 		return nil
 	}
 
 	// must have a valid client
 	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+		fmt.Printf("Empty Client\n")
 		return nil
 	}
 

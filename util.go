@@ -121,7 +121,6 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 			return auth
 		}
 	} else {
-
 		auth, err := CheckBasicAuth(r)
 		if err != nil {
 			s.setErrorAndLog(w, E_INVALID_REQUEST, err, "get_client_auth=%s", "check auth error")
