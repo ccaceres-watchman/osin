@@ -3,7 +3,10 @@ package osin
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -20,6 +23,8 @@ const (
 	ASSERTION          AccessRequestType = "assertion"
 	IMPLICIT           AccessRequestType = "__implicit"
 )
+
+var jsonUtils JsonUtils
 
 // AccessRequest is a request for access tokens
 type AccessRequest struct {
@@ -122,14 +127,34 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Request must be POST"), "access_request=%s", "request must be POST")
 		return nil
 	}
+	jsonUtils.IsJSON = true
 
-	err := r.ParseForm()
-	if err != nil {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, err, "access_request=%s", "parsing error")
-		return nil
+	if r.Body != nil {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(body, &jsonUtils.TokenRequest)
+		if err != nil {
+			jsonUtils.IsJSON = false
+		}
 	}
 
-	grantType := AccessRequestType(r.FormValue("grant_type"))
+	if !jsonUtils.IsJSON {
+		err := r.ParseForm()
+		if err != nil {
+			s.setErrorAndLog(w, E_INVALID_REQUEST, err, "access_request=%s", "parsing error")
+			return nil
+		}
+	}
+
+	grantRequest := r.FormValue("grant_type")
+	if jsonUtils.IsJSON {
+		grantRequest = jsonUtils.TokenRequest.Grant_type
+	}
+
+	grantType := AccessRequestType(grantRequest)
+	fmt.Printf("Grant Type: %s\n", grantType)
 	if s.Config.AllowedAccessTypes.Exists(grantType) {
 		switch grantType {
 		case AUTHORIZATION_CODE:
@@ -360,11 +385,14 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	if auth == nil {
 		return nil
 	}
-
+	userName := r.FormValue("username")
+	if jsonUtils.IsJSON {
+		userName = jsonUtils.TokenRequest.Username
+	}
 	// generate access token
 	ret := &AccessRequest{
 		Type:            PASSWORD,
-		Username:        r.FormValue("username"),
+		Username:        userName,
 		Password:        r.FormValue("password"),
 		Scope:           r.FormValue("scope"),
 		GenerateRefresh: true,

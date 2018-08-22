@@ -19,6 +19,20 @@ type BearerAuth struct {
 	Code string
 }
 
+type TokenRequest struct {
+	Grant_type    string
+	Username      string
+	Password      string
+	Client_id     int
+	Client_secret string
+	Scope         string
+}
+
+type JsonUtils struct {
+	IsJSON       bool
+	TokenRequest TokenRequest
+}
+
 // CheckClientSecret determines whether the given secret matches a secret held by the client.
 // Public clients return true for a secret of ""
 func CheckClientSecret(client Client, secret string) bool {
