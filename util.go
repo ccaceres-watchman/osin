@@ -82,7 +82,6 @@ func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("User: %s, Pass: %s\n", username, password)
 
 	return &BasicAuth{Username: username, Password: password}, nil
 }
@@ -133,6 +132,12 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 			s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth=%s", "client authentication not sent")
 			return nil
 		}
+		out, err := json.Marshal(auth)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(out))
 	}
 	return auth
 }
