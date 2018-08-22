@@ -112,14 +112,12 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 
 	if allowQueryParams {
 		// Allow for auth without password
-		if _, hasSecret := r.Form["client_secret"]; hasSecret {
-			auth := &BasicAuth{
-				Username: r.FormValue("client_id"),
-				Password: r.FormValue("client_secret"),
-			}
-			if auth.Username != "" {
-				return auth
-			}
+		auth := &BasicAuth{
+			Username: string(jsonUtils.TokenRequest.Client_id),
+			Password: jsonUtils.TokenRequest.Client_secret,
+		}
+		if auth.Username != "" {
+			return auth
 		}
 	}
 
