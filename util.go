@@ -114,11 +114,13 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 	var auth *BasicAuth
 
 	if allowQueryParams {
+		fmt.Println("allowed query params")
 		// Allow for auth without password
-		auth := &BasicAuth{
+		auth = &BasicAuth{
 			Username: string(jsonUtils.TokenRequest.Client_id),
 			Password: jsonUtils.TokenRequest.Client_secret,
 		}
+		fmt.Println(auth.Username)
 		if auth.Username != "" {
 			return auth
 		}
@@ -132,13 +134,13 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 			s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth=%s", "client authentication not sent")
 			return nil
 		}
-		out, err := json.Marshal(auth)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(string(out))
 	}
+	out, err := json.Marshal(auth)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(out))
 	return auth
 }
 
