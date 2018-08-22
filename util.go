@@ -82,7 +82,7 @@ func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Check basic end")
+	fmt.Printf("User: %s, Pass: %s\n", username, password)
 
 	return &BasicAuth{Username: username, Password: password}, nil
 }
