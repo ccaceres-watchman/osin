@@ -3,7 +3,9 @@ package osin
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,6 +31,7 @@ type AccessRequest struct {
 	Type          AccessRequestType
 	Code          string
 	Client        Client
+	User          User
 	AuthorizeData *AuthorizeData
 	AccessData    *AccessData
 
@@ -64,6 +67,9 @@ type AccessRequest struct {
 type AccessData struct {
 	// Client information
 	Client Client
+
+	// User information
+	User User
 
 	// Authorize data, for authorization code
 	AuthorizeData *AuthorizeData
@@ -397,6 +403,17 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 		return nil
 	}
 
+	// must have a valid user
+	if ret.User = s.getUserByEmail(jsonUtils.TokenRequest.Username, w.Storage, w); ret.User == nil {
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password=%s", "user not found")
+		return nil
+	} else if !ComparePasswords(ret.User.GetPassword(), []byte(jsonUtils.TokenRequest.Password)) {
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password=%s", "invalid credentials")
+		return nil
+	}
+	res2B, _ := json.Marshal(ret)
+	fmt.Println(string(res2B))
+
 	// set redirect uri
 	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
@@ -565,6 +582,26 @@ func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response) Client 
 		return nil
 	}
 	return client
+}
+
+// getUserByEmail looks up and authenticates the basic auth using the given
+// storage. Sets an error on the response if auth fails or a server error occurs.
+func (s Server) getUserByEmail(username string, storage Storage, w *Response) User {
+	user, err := storage.GetUserByEmail(username)
+	if err == ErrNotFound {
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_user=%s", "not found")
+		return nil
+	}
+	if err != nil {
+		s.setErrorAndLog(w, E_SERVER_ERROR, err, "get_user=%s", "error finding user")
+		return nil
+	}
+	if user == nil {
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_user=%s", "user is nil")
+		return nil
+	}
+
+	return user
 }
 
 // setErrorAndLog sets the response error and internal error (if non-nil) and logs them along with the provided debug format string and arguments.

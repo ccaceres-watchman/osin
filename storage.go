@@ -26,6 +26,12 @@ type Storage interface {
 	// GetClient loads the client by id (client_id)
 	GetClient(id string) (Client, error)
 
+	// GetUser loads the user by id (user_id)
+	GetUser(id int) (User, error)
+
+	// GetUserByEmail loads the user by email
+	GetUserByEmail(email string) (User, error)
+
 	// SaveAuthorize saves authorize data.
 	SaveAuthorize(*AuthorizeData) error
 
