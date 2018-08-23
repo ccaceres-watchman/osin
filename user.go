@@ -2,6 +2,7 @@ package osin
 
 import (
 	"log"
+	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -95,4 +96,12 @@ func (d *DefaultUser) CopyFrom(user User) {
 	d.LastName = user.GetLastName()
 	d.Email = user.GetEmail()
 	d.Password = user.GetPassword()
+}
+
+func (s *Server) GetRequestUser(w *Response, r *http.Request) User {
+	if infoRequest := s.HandleInfoRequest(w, r); infoRequest != nil {
+		return infoRequest.AccessData.User
+	}
+
+	return nil
 }
