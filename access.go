@@ -500,6 +500,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			// generate access token
 			ret = &AccessData{
 				Client:        ar.Client,
+				User:          ar.User,
 				AuthorizeData: ar.AuthorizeData,
 				AccessData:    ar.AccessData,
 				RedirectUri:   redirectUri,
