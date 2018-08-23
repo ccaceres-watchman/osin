@@ -588,6 +588,10 @@ func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response) Client 
 // storage. Sets an error on the response if auth fails or a server error occurs.
 func (s Server) getUserByEmail(username string, storage Storage, w *Response) User {
 	user, err := storage.GetUserByEmail(username)
+
+	res2B, _ := json.Marshal(user)
+	fmt.Println(string(res2B))
+
 	if err == ErrNotFound {
 		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_user=%s", "not found")
 		return nil

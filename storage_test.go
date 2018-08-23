@@ -81,6 +81,14 @@ func (s *TestingStorage) SetClient(id string, client Client) error {
 	return nil
 }
 
+func (s *TestingStorage) GetUser(id int) (User, error) {
+	return nil, nil
+}
+
+func (s *TestingStorage) GetUserByEmail(email string) (User, error) {
+	return nil, nil
+}
+
 func (s *TestingStorage) SaveAuthorize(data *AuthorizeData) error {
 	s.authorize[data.Code] = data
 	return nil
