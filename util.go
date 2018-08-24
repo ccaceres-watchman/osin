@@ -27,6 +27,7 @@ type TokenRequest struct {
 	Password      string
 	Client_id     int
 	Client_secret string
+	Refresh_token string
 	Scope         string
 }
 

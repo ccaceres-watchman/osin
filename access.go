@@ -145,6 +145,7 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 		jsonUtils.TokenRequest.Client_secret = r.FormValue("client_secret")
 		jsonUtils.TokenRequest.Username = r.FormValue("username")
 		jsonUtils.TokenRequest.Password = r.FormValue("password")
+		jsonUtils.TokenRequest.Refresh_token = r.FormValue("refresh_token")
 		jsonUtils.TokenRequest.Scope = r.FormValue("scope")
 	}
 
@@ -312,8 +313,8 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	// generate access token
 	ret := &AccessRequest{
 		Type:            REFRESH_TOKEN,
-		Code:            r.FormValue("refresh_token"),
-		Scope:           r.FormValue("scope"),
+		Code:            jsonUtils.TokenRequest.Refresh_token,
+		Scope:           jsonUtils.TokenRequest.Scope,
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
