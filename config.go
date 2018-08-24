@@ -70,7 +70,7 @@ type ServerConfig struct {
 func NewServerConfig() *ServerConfig {
 	return &ServerConfig{
 		AuthorizationExpiration:   250,
-		AccessExpiration:          3600,
+		AccessExpiration:          2678400, // 1 month
 		TokenType:                 "Bearer",
 		AllowedAuthorizeTypes:     AllowedAuthorizeType{CODE},
 		AllowedAccessTypes:        AllowedAccessType{PASSWORD, REFRESH_TOKEN},
