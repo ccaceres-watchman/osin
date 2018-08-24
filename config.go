@@ -73,7 +73,7 @@ func NewServerConfig() *ServerConfig {
 		AccessExpiration:          3600,
 		TokenType:                 "Bearer",
 		AllowedAuthorizeTypes:     AllowedAuthorizeType{CODE},
-		AllowedAccessTypes:        AllowedAccessType{PASSWORD},
+		AllowedAccessTypes:        AllowedAccessType{PASSWORD, REFRESH_TOKEN},
 		ErrorStatusCode:           200,
 		AllowClientSecretInParams: false,
 		AllowGetAccessRequest:     false,
