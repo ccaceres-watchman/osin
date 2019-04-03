@@ -483,7 +483,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 	return ret
 }
 
-func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessRequest) {
+func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessRequest, isV2 bool) {
 	// don't process if is already an error
 	if w.IsError {
 		return
@@ -541,24 +541,26 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		}
 
 		// output data
-		// w.Output["access_token"] = ret.AccessToken
-		// w.Output["token_type"] = s.Config.TokenType
-		// w.Output["expires_in"] = ret.ExpiresIn
-		// if ret.RefreshToken != "" {
-		// 	w.Output["refresh_token"] = ret.RefreshToken
-		// }
-		// if ret.Scope != "" {
-		// 	w.Output["scope"] = ret.Scope
-		// }
-
-		w.Output["status"] = 200
-		w.Output["error"] = nil
-		w.Output["response"] = map[string]interface{}{
-			"access_token":  ret.AccessToken,
-			"token_type":    s.Config.TokenType,
-			"expires_in":    ret.ExpiresIn,
-			"refresh_token": ret.RefreshToken,
-			"scope":         ret.Scope,
+		if isV2 {
+			w.Output["access_token"] = ret.AccessToken
+			w.Output["token_type"] = s.Config.TokenType
+			w.Output["expires_in"] = ret.ExpiresIn
+			if ret.RefreshToken != "" {
+				w.Output["refresh_token"] = ret.RefreshToken
+			}
+			if ret.Scope != "" {
+				w.Output["scope"] = ret.Scope
+			}
+		} else {
+			w.Output["status"] = 200
+			w.Output["error"] = nil
+			w.Output["response"] = map[string]interface{}{
+				"access_token":  ret.AccessToken,
+				"token_type":    s.Config.TokenType,
+				"expires_in":    ret.ExpiresIn,
+				"refresh_token": ret.RefreshToken,
+				"scope":         ret.Scope,
+			}
 		}
 	} else {
 		s.setErrorAndLog(w, E_ACCESS_DENIED, nil, "finish_access_request=%s", "authorization failed")
