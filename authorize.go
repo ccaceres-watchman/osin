@@ -153,7 +153,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 		w.InternalError = err
 		return nil
 	} else {
-		ret.RedirectUri =  realRedirectUri
+		ret.RedirectUri = realRedirectUri
 	}
 
 	w.SetRedirect(ret.RedirectUri)
@@ -231,7 +231,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 				UserData:        ar.UserData,
 			}
 
-			s.FinishAccessRequest(w, r, ret)
+			s.FinishAccessRequest(w, r, ret, false)
 			if ar.State != "" && w.InternalError == nil {
 				w.Output["state"] = ar.State
 			}
